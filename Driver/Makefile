@@ -1,5 +1,8 @@
-obj-m += usb_driver.o
-name = usb_driver
+#obj-m += usb_driver.o
+#name = usb_driver
+
+obj-m += arduino_driver.o
+name = arduino_driver
 
 #compile module
 all:

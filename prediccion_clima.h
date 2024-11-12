@@ -6,7 +6,7 @@
 #include <json-c/json.h>
 
 #define API_KEY "3qjdFKCUXqUi206Y9UJhxCBKExAWQvQm"
-#define LOCATION_KEY "186745" // Ajusta este código según tu ubicación
+#define LOCATION_KEY "186788" // Ubicación de Cartago, Costa Rica
 
 // Estructura para el pronóstico del clima
 typedef struct {

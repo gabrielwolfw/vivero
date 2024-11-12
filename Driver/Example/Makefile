@@ -1,21 +1,16 @@
-#obj-m += usb_driver.o
-#name = usb_driver
+obj-m += usb-arduino.o
+name = usb_arduino
 
-obj-m += arduino_driver.o
-name = arduino_driver
-
-#compile module
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
-#run before reinstalling module
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
 #load module into the kernel
 load: 
-	sudo insmod $(name).ko
-	
+	sudo insmod usb-arduino.ko
+
 #remove module from the kernel
 remove: 
 	sudo rmmod $(name)

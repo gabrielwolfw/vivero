@@ -1,30 +1,4 @@
-#include <mpi.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include "calculos.h"
-
-
-// Estructuras de datos para compartir entre nodos
-typedef struct {
-    float temperatura;
-    float humedad;
-    float timestamp;
-} SensorData;
-
-typedef struct {
-    float vpd;
-    float indiceCalor;
-    float puntoRocio;
-    float timestamp;
-} CalculatedData;
-
-typedef struct {
-    float tempPronostico;
-    float humedadPronostico;
-    char fecha[20];
-} WeatherForecast;
+#include "sistema_distribuido.h"
 
 // Función para el nodo de recolección (Rank 0)
 void nodo_recoleccion() {
@@ -39,8 +13,12 @@ void nodo_recoleccion() {
     
     // Guardamos datos para Power BI
     FILE *fp = fopen("sensor_data.csv", "a");
-    fprintf(fp, "%f,%f,%f\n", data.timestamp, data.temperatura, data.humedad);
-    fclose(fp);
+    if (fp != NULL) {
+        fprintf(fp, "%f,%f,%f\n", data.timestamp, data.temperatura, data.humedad);
+        fclose(fp);
+    } else {
+        fprintf(stderr, "Error al abrir sensor_data.csv\n");
+    }
 }
 
 // Función para el nodo de cálculos (Rank 1)
@@ -62,60 +40,43 @@ void nodo_calculos() {
     
     // Guardamos resultados para Power BI
     FILE *fp = fopen("calculated_data.csv", "a");
-    fprintf(fp, "%f,%f,%f,%f\n", 
-            results.timestamp, results.vpd, 
-            results.indiceCalor, results.puntoRocio);
-    fclose(fp);
+    if (fp != NULL) {
+        fprintf(fp, "%f,%f,%f,%f\n", 
+                results.timestamp, results.vpd, 
+                results.indiceCalor, results.puntoRocio);
+        fclose(fp);
+    } else {
+        fprintf(stderr, "Error al abrir calculated_data.csv\n");
+    }
 }
 
 // Función para el nodo de predicciones (Rank 2)
 void nodo_predicciones() {
     CalculatedData calc_data;
     WeatherForecast forecast;
+    time_t tiempo_actual;
+    struct tm *tiempo_info;
     
     // Recibimos datos calculados
     MPI_Recv(&calc_data, sizeof(CalculatedData), MPI_BYTE, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     
-    // TODO: Integrar con API AccuWeather
-    // Por ahora simulamos datos de pronóstico
-    forecast.tempPronostico = 26.0;
-    forecast.humedadPronostico = 70.0;
-    strftime(forecast.fecha, 20, "%Y-%m-%d", localtime(&(time_t){calc_data.timestamp}));
+    // Obtener pronóstico
+    obtener_pronostico(&forecast);
     
-    // Guardamos predicciones para Power BI
+    // Manejar la fecha
+    tiempo_actual = (time_t)calc_data.timestamp;
+    tiempo_info = localtime(&tiempo_actual);
+    strftime(forecast.fecha, 20, "%Y-%m-%d", tiempo_info);
+    
+    // Guardar datos para Power BI
     FILE *fp = fopen("forecast_data.csv", "a");
-    fprintf(fp, "%s,%f,%f\n", 
-            forecast.fecha, 
-            forecast.tempPronostico, 
-            forecast.humedadPronostico);
-    fclose(fp);
-}
-
-int main(int argc, char** argv) {
-    int rank, size;
-    
-    MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-    
-    if (size != 3) {
-        printf("Este programa requiere exactamente 3 procesos\n");
-        MPI_Abort(MPI_COMM_WORLD, 1);
+    if (fp != NULL) {
+        fprintf(fp, "%s,%.2f,%.2f\n", 
+                forecast.fecha, 
+                forecast.tempPronostico, 
+                forecast.humedadPronostico);
+        fclose(fp);
+    } else {
+        fprintf(stderr, "Error al abrir forecast_data.csv\n");
     }
-    
-    // Ejecutamos la función correspondiente según el rank
-    switch(rank) {
-        case 0:
-            nodo_recoleccion();
-            break;
-        case 1:
-            nodo_calculos();
-            break;
-        case 2:
-            nodo_predicciones();
-            break;
-    }
-    
-    MPI_Finalize();
-    return 0;
 }

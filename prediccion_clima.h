@@ -6,13 +6,16 @@
 #include <json-c/json.h>
 
 #define API_KEY "3qjdFKCUXqUi206Y9UJhxCBKExAWQvQm"
-#define LOCATION_KEY "186788" // Ubicación de Cartago, Costa Rica
+#define LOCATION_KEY "112407" // Ubicación de Cartago, Costa Rica
 
 // Estructura para el pronóstico del clima
 typedef struct {
     float tempPronostico;
     float humedadPronostico;
     char fecha[20];
+    char condicionClima[50];    // Para guardar la descripción del clima
+    int probabilidadLluvia;     // Probabilidad de precipitación
+    int esHoraDia;             // Si es de día o de noche
 } WeatherForecast;
 
 // Estructura para manejar la memoria de respuesta

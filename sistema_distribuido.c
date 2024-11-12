@@ -57,10 +57,11 @@ void nodo_predicciones() {
     time_t tiempo_actual;
     struct tm *tiempo_info;
     
-    // Recibimos datos calculados
+    // Recibimos datos calculados del nodo anterior
     MPI_Recv(&calc_data, sizeof(CalculatedData), MPI_BYTE, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     
     // Obtener pronóstico
+    printf("\nNodo de predicciones: Obteniendo pronóstico del clima...\n");
     obtener_pronostico(&forecast);
     
     // Manejar la fecha
@@ -68,14 +69,36 @@ void nodo_predicciones() {
     tiempo_info = localtime(&tiempo_actual);
     strftime(forecast.fecha, 20, "%Y-%m-%d", tiempo_info);
     
-    // Guardar datos para Power BI
+    // Mostrar resultados en consola
+    printf("\nResultados del pronóstico:\n");
+    printf("Fecha: %s\n", forecast.fecha);
+    printf("Temperatura: %.2f°C\n", forecast.tempPronostico);
+    printf("Condición: %s\n", forecast.condicionClima);
+    printf("Probabilidad de lluvia: %d%%\n", forecast.probabilidadLluvia);
+    printf("Momento del día: %s\n", forecast.esHoraDia ? "Día" : "Noche");
+    
+    // Guardar datos en CSV
     FILE *fp = fopen("forecast_data.csv", "a");
     if (fp != NULL) {
-        fprintf(fp, "%s,%.2f,%.2f\n", 
-                forecast.fecha, 
-                forecast.tempPronostico, 
-                forecast.humedadPronostico);
+        // Verificar si el archivo está vacío para escribir encabezados
+        fseek(fp, 0, SEEK_END);
+        if (ftell(fp) == 0) {
+            fprintf(fp, "Fecha,Temperatura,ProbabilidadLluvia,CondicionClima,Momento,VPD,IndiceCalor,PuntoRocio\n");
+        }
+        
+        // Escribir datos incluyendo los cálculos recibidos del nodo anterior
+        fprintf(fp, "%s,%.2f,%d,%s,%s,%.2f,%.2f,%.2f\n", 
+                forecast.fecha,
+                forecast.tempPronostico,
+                forecast.probabilidadLluvia,
+                forecast.condicionClima,
+                forecast.esHoraDia ? "Día" : "Noche",
+                calc_data.vpd,
+                calc_data.indiceCalor,
+                calc_data.puntoRocio);
+        
         fclose(fp);
+        printf("\nDatos guardados en forecast_data.csv\n");
     } else {
         fprintf(stderr, "Error al abrir forecast_data.csv\n");
     }

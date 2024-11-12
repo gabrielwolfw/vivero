@@ -7,3 +7,8 @@ sudo apt update && sudo apt upgrade  -y
 sudo apt install -y build-essential
 sudo apt-get install -y linux-headers-$(uname -r)
 ```
+
+# Permisos para USB
+```bash
+sudo usermod -a -G dialout username
+```

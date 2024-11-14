@@ -134,7 +134,7 @@ static ssize_t arduino_write(struct file *f, const char __user *buf, size_t coun
 	
 	printk("Message from user: %s\n",(char *)buff);
 	retval = usb_submit_urb(mydev->bulk_out_urb, GFP_KERNEL);
-	if(retval)
+	if(retval) //https://elixir.bootlin.com/linux/v6.11.3/source/include/uapi/asm-generic/errno-base.h#L20des
 	{
 		printk("Error: Could not submit!\n");
 		printk("Error Code: %d\n", retval);
@@ -237,6 +237,7 @@ static int arduino_probe(struct usb_interface * interface, const struct usb_devi
 		return -1;
 	}
 	
+	//int usb_control_msg(struct usb_device * dev, unsigned int pipe, __u8 request, __u8 requesttype, __u16 value, __u16 index, void * data, __u16 size, int timeout);
 	retval = usb_control_msg(dev->udev, usb_sndctrlpipe(dev->udev, 0), 0x22, 0x21, cpu_to_le16(0x00), cpu_to_le16(0x00), dev->ctrl_buffer,
 		cpu_to_le16(0x00), 0);
 	if(retval < 0)
@@ -324,7 +325,9 @@ int init_module()
 
 void cleanup_module()
 {
+	usb_deregister(&arduino_driver);
 	printk("Message: Inside cleanup module.\n");
+
 }
 
 MODULE_AUTHOR("Sourav Bose | Suhit Sinha");

@@ -2,17 +2,31 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/ioctl.h>
 
-//make a new device: sudo mknod /dev/mydevice c 90 0
+#include "ioctl_test.h"
 
-//Test opening the device created
-int main(){
-    int dev = open("/dev/mydevice", O_RDONLY);
-    if(dev == -1){
-        printf("Opening was not possible! \n");
-        return -1;
-    }
-    printf("Opening was sucessful! \n");
-    close(dev);
-    return 0;
+int main() {
+	int answer;
+	struct mystruct test = {4, "Johannes"};
+	int dev = open("/dev/mydevice", O_WRONLY);
+	if(dev == -1) {
+		printf("Opening was not possible!\n");
+		return -1;
+	}
+
+	ioctl(dev, RD_VALUE, &answer);
+	printf("The answer is %d\n", answer);
+
+	answer = 123;
+
+	ioctl(dev, WR_VALUE, &answer);
+	ioctl(dev, RD_VALUE, &answer);
+	printf("The answer is  now %d\n", answer);
+
+	ioctl(dev, GREETER, &test);
+
+	printf("Opening was successfull!\n");
+	close(dev);
+	return 0;
 }

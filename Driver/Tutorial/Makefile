@@ -22,3 +22,11 @@ check:
 log:
 	sudo dmesg | tail
 
+test:
+	gcc test.c -o test
+	./test
+#cat /proc/devices | grep my_dev_nr
+#ls /dev/ViveroDriver -al
+#sudo chmod 666 /dev/ViveroDriver
+#make a new device: sudo mknod /dev/mydevice c 90 0
+#sudo rm /dev/mydevice

@@ -26,3 +26,6 @@ check:
 log:
 	sudo dmesg | tail
 
+run:
+	gcc c_test.c -o c_tes
+	./test

@@ -120,17 +120,6 @@ static int __init ModuleInit(void){
 		goto AddError;
 	}
 
-	//GPIO 8 init
-	if(gpio_request(8, "rpi-gpio-4")){
-		printk("Can not allocate GPIO 4 \n");
-		goto AddError;
-	}
-
-	//set GPIO direction
-	if(gpio_direction_output(4,0)){
-		printk("Can not set GPIO 4 to output!")
-	}
-
 	return 0;
 
 AddError:

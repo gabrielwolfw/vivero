@@ -1,15 +1,4 @@
-#include <linux/fs.h>
-#include <linux/uaccess.h>
-#include <linux/tty.h>
-#include <linux/slab.h>
-
-/* Meta information */
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Karina MG");
-MODULE_DESCRIPTION("Driver for Arduino USB device");
-
-#define SERIAL_DEVICE "/dev/ttyACM0"
-
+#include "arduino_driver.h"
 
 static struct file *serial_file = NULL;
 
@@ -38,10 +27,11 @@ static ssize_t serial_write(const char *data, size_t size){
     }
 
     ret = vfs_write(serial_file, data, size, &serial_file->f_pos);
+    printk(KERN_ALERT "Arduino driver wrote \n");
     return ret;          
 }
 
-static ssize_t blink_led(const char *buffer, size_t len){
+static ssize_t turn_on_led(const char *buffer, size_t len){
     char command = buffer[0];
 
     if(command == '1'){
@@ -52,6 +42,18 @@ static ssize_t blink_led(const char *buffer, size_t len){
     }
 
     return len;
+}
+
+static long my_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
+    switch (cmd) {
+        case MY_IOCTL_CMD:
+            // Perform the operation
+            printk(KERN_INFO "IOCTL command executed\n");
+            break;
+        default:
+            return -EINVAL; // Invalid command
+    }
+    return 0;
 }
 
 static int __init arduino_driver_init(void){

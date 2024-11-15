@@ -8,3 +8,6 @@ modules.order
 *.mod.o
 *.ko
 *.o
+test
+Tutorial
+Example

@@ -1,8 +1,5 @@
-#obj-m += usb_driver.o
-#name = usb_driver
-
-obj-m += arduino_driver.o
-name = arduino_driver
+obj-m += greenhouse_driver.o
+name = greenhouse_driver
 
 #compile module
 all:
@@ -26,6 +23,8 @@ check:
 log:
 	sudo dmesg | tail
 
-run:
+comp:
 	gcc c_test.c -o c_tes
+	
+run:
 	./test

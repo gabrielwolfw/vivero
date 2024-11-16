@@ -17,14 +17,18 @@ load:
 remove: 
 	sudo rmmod $(name)
 
+#check if module was loaded into the kernel
 check:
 	lsmod | grep $(name)
 
+#check kernel log, driver messages are printer there
 log:
 	sudo dmesg | tail
 
+#compile interface test
 comp:
-	gcc c_test.c -o c_tes
+	gcc interface_test.c -o test
 	
 run:
 	./test
+

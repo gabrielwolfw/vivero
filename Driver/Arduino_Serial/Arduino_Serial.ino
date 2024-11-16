@@ -14,6 +14,9 @@ void loop() {
     else if(command == '0'){
       digitalWrite(LED, LOW);
     }
+    else if(command == '2'){
+      Serial.write("Hello");
+    }
   }
 
 }

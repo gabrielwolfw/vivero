@@ -15,6 +15,9 @@ load:
 remove: 
 	sudo rmmod $(name)
 
+rem_usb:
+	sudo rmmod cdc_acm
+
 check:
 	lsmod | grep $(name)
 

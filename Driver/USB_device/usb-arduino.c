@@ -7,7 +7,6 @@
 #include <asm/uaccess.h>
 #include <linux/delay.h>
 #include <linux/notifier.h>
-#include <linux/keyboard.h>
 #include <linux/interrupt.h>
 #include <linux/string.h>
 #include <linux/sched.h>
@@ -98,7 +97,7 @@ static ssize_t arduino_read(struct file * f, char __user *buf, size_t len, loff_
 	printk("Arduino Message: Inside Read Function.\n");
 
 	retval = usb_bulk_msg(dev, usb_rcvbulkpipe(dev, (unsigned int)mydev->bulk_in_endpoint->bEndpointAddress), 
-				mydev->bulk_in_buffer, len, &count_actual_read_len, 1);
+				mydev->bulk_in_buffer, len, &count_actual_read_len, 100);
 	printk("Count: %d\n", len);
 	if (retval)
 	{
@@ -176,12 +175,14 @@ static int arduino_probe(struct usb_interface * interface, const struct usb_devi
 	// printk("Number of end points %d\n", arduino_currsetting->desc.bNumEndpoints);
 	for (i = 0; i < arduino_currsetting->desc.bNumEndpoints; ++i) {
 		endpoint = &arduino_currsetting->endpoint[i].desc;
+		printk("Checking endpoint address: %d", endpoint->bEndpointAddress);
 		if (((endpoint->bEndpointAddress & USB_ENDPOINT_DIR_MASK) == USB_DIR_IN)
 		    && ((endpoint->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
 			== USB_ENDPOINT_XFER_BULK))
 		{
 			dev->bulk_in_endpoint = endpoint;
 			printk("Found Bulk Endpoint IN\n");
+			printk("IN endpoint address: %d", dev->bulk_in_endpoint->bEndpointAddress);
 		}
 		
 		if (((endpoint->bEndpointAddress & USB_ENDPOINT_DIR_MASK) == USB_DIR_OUT)
@@ -190,6 +191,7 @@ static int arduino_probe(struct usb_interface * interface, const struct usb_devi
 		{
 			dev->bulk_out_endpoint = endpoint;
 			printk("Found Bulk Endpoint OUT\n");
+			printk("OUT endpoint address: %d", dev->bulk_out_endpoint->bEndpointAddress);
 		}
 
 	}

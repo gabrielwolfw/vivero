@@ -15,16 +15,19 @@ sudo usermod -a -G dialout username
 
 # Instalación del driver
 
-Antes de compilar y cargar el driver, se debe quitar el driver por defecto para USB con:
+Antes de compilar y cargar el driver, se debe quitar el driver por defecto para USB con, después conectar el Arduino:
 ```bash
 sudo rmmod cdc_acm
 ```
-Despues 
+Después ejecutar:
+
 ```bash 
 make all
 make load
 ```
-Después conectar el Arduino, y verificar que aparece el mensaje: USB Device Inserted. Probing Arduino. 
+ Verificar que aparece el mensaje: 
+ - USB Device Inserted. Probing Arduino. 
+ - USB Arduino device now attached to /dev/ard#
 
 ```bash 
 make log

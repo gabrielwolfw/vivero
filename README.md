@@ -8,29 +8,14 @@ sudo apt install -y build-essential
 sudo apt-get install -y linux-headers-$(uname -r)
 ```
 
-# Permisos para USB
+# Permisos para USB / Arduino
 ```bash
 sudo usermod -a -G dialout username
 ```
 
-# Instalación del driver
-Conectar arduino y verificar con sudo dmesg si aparece en puerto ttyACM0, ir a la carpeta Driver y ejecutar
-```bash 
-make all
-make load
-make log
-```
-En el log del Kernel, el driver escribe el número de dispositivo que registro, para el siguiente paso utilizar el Major que corresponde
+# Driver serial
+En la carpeta Character_device está la versión que usa un dispositivo de caracter para acceder al arduino, actualemente solo puede escribir
 
-```bash 
-sudo mknod /dev/vivero c MAJOR 0
-```
-
-El archivo interface_test.c tiene un ejemplo de cómo escribir al driver, al momento los comandos disponibles son TURN_ON_LED y TURN_OFF_LED, para pruebas
-
-# Desinstalar el driver
-```bash
-make remove
-sudo rm /dev/vivero
-```
+# Driver USB
+En la carpeta USB_device está la versión que usa la interfaz USB para comunicarse con el arduino, actualmente solo puede escribir y la opción de leer está dando errores
 

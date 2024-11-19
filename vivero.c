@@ -2,6 +2,12 @@
 
 int main(int argc, char** argv) {
     int rank, size;
+
+    // Inicializar AES (solo una vez)
+    if (rank == 0) {
+        inicializar_aes();
+        // Distribuir la clave a otros nodos si es necesario
+    }
     
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);

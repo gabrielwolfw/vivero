@@ -4,6 +4,8 @@
 unsigned long previousSensorMillis = 0;
 const long sensorInterval = 4000; // Intervalo de 4 segundos para lecturas de sensores
 
+int cont = 0;
+
 void setup() {
   pinMode(LED, OUTPUT);
   Serial.begin(9600);
@@ -25,7 +27,7 @@ void loop() {
   }
 
   // Enviar lecturas de sensores cada 4 segundos
-  //sendSensorReadings();
+  sendSensorReadings();
 
 }
 
@@ -37,21 +39,27 @@ void sendSensorReadings() {
     previousSensorMillis = currentMillis;
 
     // Lectura de humedad de suelo
-    int soilMoistureValue = 40;
+    int soilMoistureValue = 20;
 
     // Lectura del DHT22
     float temperature = 25;
-    float humidity = 80;
+    float humidity = 60;
 
     if (isnan(temperature) || isnan(humidity)) {
       Serial.println("Error al leer el sensor DHT22");
     } else {
-      // Enviar datos en formato CSV
-      Serial.print(soilMoistureValue);
-      Serial.print(",");
-      Serial.print(temperature);
-      Serial.print(",");
-      Serial.println(humidity);
+        if(cont < 5){
+          // Enviar datos en formato CSV
+          Serial.print(soilMoistureValue + cont*10);
+          Serial.print(",");
+          Serial.print(temperature);
+          Serial.print(",");
+          Serial.println(humidity);
+          cont++;
+        }
+        else{
+          cont = 0;
+        }
+      }
     }
-  }
 }

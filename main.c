@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include "calculos.h" // Incluir el archivo de encabezado de los cálculos
+#include "Driver/Character_device/greenhouse_interface.h"
 
 int serial_port = -1;
 
@@ -60,10 +61,21 @@ int send_command(int serial_port_fd, const char *command, int max_retries) {
     int n;
 
     while (attempt < max_retries) {
-        n = write(serial_port_fd, command, strlen(command));
+        //n = write(serial_port_fd, command, strlen(command));
+
+        int dev = open("/dev/vivero", O_WRONLY);
+        if(dev == -1) {
+            printf("Opening was not possible!\n");
+            return -1;
+        }
+        if(command == "Abrir tubo")
+            n = ioctl(dev, OPEN_WATER, NULL);
+        else
+            n = ioctl(dev, CLOSE_WATER, NULL);
         if (n >= 0) {
-            write(serial_port_fd, "\n", 1);
-            printf("Comando enviado: %s\n", command);
+            //write(serial_port_fd, "\n", 1);
+            printf("Comando enviado \n");
+            close(dev);
             return 0;
         }
         perror("Error al escribir en el puerto");
@@ -79,7 +91,7 @@ int main() {
     // Definición de buf_pos como size_t para evitar el conflicto y las advertencias de signo
     size_t buf_pos = 0;
 
-    const char *portname = "/dev/cu.usbmodem141301";
+    const char *portname = "/dev/ttyACM0";
     serial_port = open(portname, O_RDWR | O_NOCTTY | O_NDELAY);
 
     if (serial_port < 0) {
@@ -144,7 +156,7 @@ int main() {
 
                     // Activar o desactivar riego según umbrales
                     if (humedadSuelo < umbralHumedadSuelo || vpd > umbralVPD || indiceCalor > umbralIndiceCalor) {
-                        send_command(serial_port, "Abrir tubo", 3);
+                               send_command(serial_port, "Abrir tubo", 3);
                     } else {
                         send_command(serial_port, "Cerrar tubo", 3);
                     }

@@ -80,17 +80,17 @@ static ssize_t serial_write(const char *data, size_t size){
     }
 
     ret = kernel_write(serial_file, data, size, &serial_file->f_pos);
-    printk(KERN_ALERT "Greenhouse driver wrote \n");
+    printk(KERN_ALERT "Greenhouse driver wrote: %d bytes\n", ret);
     return ret;          
 }
 
 static ssize_t driver_ioctl(struct file *file, unsigned cmd, unsigned long arg){
 	switch(cmd){
-		case TURN_LED_ON:
-			serial_write("1", 1);
+		case OPEN_WATER:
+			serial_write("Abrir tubo$", 11);
 			break;
-		case TURN_LED_OFF:
-			serial_write("0", 1);
+		case CLOSE_WATER:
+			serial_write("Cerrar tubo$", 12);
 			break;
 	}
 	return 0;

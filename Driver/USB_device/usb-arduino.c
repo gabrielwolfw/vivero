@@ -12,12 +12,16 @@
 #include <linux/sched.h>
 #include <linux/export.h>
 #include <linux/kmod.h>
+#include "greenhouse_interface.h"
+
+#define TRANSFER_SIZE    8
 
 /* Function headers */
 static ssize_t arduino_write(struct file *f, const char __user *buf, size_t count, loff_t *off);
 static int arduino_open(struct inode * inode, struct file * file);
 static int arduino_release(struct inode * inode, struct file * file);
 static ssize_t arduino_read(struct file * file, char __user * buf, size_t count, loff_t * off);
+static ssize_t driver_ioctl(struct file *file, unsigned cmd, unsigned long arg);
 
 /* Global Variable Declarations */
 
@@ -67,6 +71,7 @@ static struct file_operations arduino_fops = {
 	.read = arduino_read,
 	.open =	arduino_open,
 	.release = arduino_release,
+	.unlocked_ioctl = driver_ioctl
 };
 
 static struct usb_class_driver arduino_class = {
@@ -95,6 +100,7 @@ static ssize_t arduino_read(struct file * f, char __user *buf, size_t len, loff_
 	struct usb_device * dev = mydev->udev;
 
 	printk("Arduino Message: Inside Read Function.\n");
+
 
 	retval = usb_bulk_msg(dev, usb_rcvbulkpipe(dev, (unsigned int)mydev->bulk_in_endpoint->bEndpointAddress), 
 				mydev->bulk_in_buffer, len, &count_actual_read_len, 100);
@@ -132,7 +138,9 @@ static ssize_t arduino_write(struct file *f, const char __user *buf, size_t coun
 			buff, count, (usb_complete_t)arduino_write_callback, dev);
 	
 	printk("Message from user: %s\n",(char *)buff);
+
 	retval = usb_submit_urb(mydev->bulk_out_urb, GFP_KERNEL);
+
 	if(retval) //https://elixir.bootlin.com/linux/v6.11.3/source/include/uapi/asm-generic/errno-base.h#L20des
 	{
 		printk("Error: Could not submit!\n");
@@ -144,6 +152,20 @@ static ssize_t arduino_write(struct file *f, const char __user *buf, size_t coun
 
 	return 0;
 
+}
+
+static ssize_t driver_ioctl(struct file *file, unsigned cmd, unsigned long arg){
+	char *com;
+	switch(cmd){
+		case TURN_LED_ON:
+		//static ssize_t arduino_write(struct file *f, const char __user *buf, size_t count, loff_t *off)
+			arduino_write(NULL, (char *) arg, sizeof((char *) arg), NULL);
+			break;
+		case TURN_LED_OFF:
+			arduino_write(NULL, (char *) arg, TRANSFER_SIZE, NULL);
+			break;
+	}
+	return 0;
 }
 
 static int arduino_probe(struct usb_interface * interface, const struct usb_device_id * id)
@@ -173,16 +195,18 @@ static int arduino_probe(struct usb_interface * interface, const struct usb_devi
 	arduino_currsetting = interface->cur_altsetting;
 
 	// printk("Number of end points %d\n", arduino_currsetting->desc.bNumEndpoints);
+
+	//Bulk IN endpoint is used to read data from the device to the host 
+	//Bulk OUT endpoint is used to send data from the host to the device
 	for (i = 0; i < arduino_currsetting->desc.bNumEndpoints; ++i) {
 		endpoint = &arduino_currsetting->endpoint[i].desc;
-		printk("Checking endpoint address: %d", endpoint->bEndpointAddress);
+		//printk("Checking endpoint address: %d", endpoint->bEndpointAddress);
 		if (((endpoint->bEndpointAddress & USB_ENDPOINT_DIR_MASK) == USB_DIR_IN)
 		    && ((endpoint->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
 			== USB_ENDPOINT_XFER_BULK))
 		{
 			dev->bulk_in_endpoint = endpoint;
-			printk("Found Bulk Endpoint IN\n");
-			printk("IN endpoint address: %d", dev->bulk_in_endpoint->bEndpointAddress);
+			printk("Found Bulk Endpoint IN, address: %d \n", dev->bulk_in_endpoint->bEndpointAddress);
 		}
 		
 		if (((endpoint->bEndpointAddress & USB_ENDPOINT_DIR_MASK) == USB_DIR_OUT)
@@ -190,8 +214,7 @@ static int arduino_probe(struct usb_interface * interface, const struct usb_devi
 			== USB_ENDPOINT_XFER_BULK))
 		{
 			dev->bulk_out_endpoint = endpoint;
-			printk("Found Bulk Endpoint OUT\n");
-			printk("OUT endpoint address: %d", dev->bulk_out_endpoint->bEndpointAddress);
+			printk("Found Bulk Endpoint OUT, address: %d \n", dev->bulk_out_endpoint->bEndpointAddress);
 		}
 
 	}

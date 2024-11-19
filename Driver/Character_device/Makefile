@@ -13,9 +13,14 @@ clean:
 load: 
 	sudo insmod $(name).ko
 	
+device:
+	sudo mknod /dev/vivero c $(MAJOR) 0
+	sudo chmod 666 /dev/vivero
+
 #remove module from the kernel
 remove: 
 	sudo rmmod $(name)
+	sudo rm /dev/vivero
 
 #check if module was loaded into the kernel
 check:

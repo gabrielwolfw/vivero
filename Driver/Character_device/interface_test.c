@@ -18,9 +18,9 @@ int main() {
 
 	printf("Now blinking LED!\n");
 	//IOCTL sends command to device with device number Major registered by the the driver
-	ioctl(dev, TURN_LED_ON, NULL);
+	ioctl(dev, OPEN_WATER, NULL);
     usleep(250000),
-	ioctl(dev, TURN_LED_OFF, NULL);
+	ioctl(dev, CLOSE_WATER, NULL);
 
 
 	close(dev);

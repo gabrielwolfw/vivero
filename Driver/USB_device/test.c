@@ -1,40 +1,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <string.h>
-#include <libusb-1.0/libusb.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+//This interface contains the commands available for ioctl
+#include "greenhouse_interface.h"
 
-#define VENDOR_ID 0x2341
-#define PRODUCT_ID 0x0043
+int main() {
+	
+	//Must create the file using the Major number registered by the driver
+	//with command sudo mknod /dev/vivero c 234 0
+	int dev = open("/dev/ard0", O_WRONLY);
+	if(dev == -1) {
+		printf("Opening was not possible!\n");
+		return -1;
+	}
 
-int main(int argc, char **argv){
-  int status, value;
-  libusb_device_handle *dev = NULL;
-  char buffer[1];
-  int transferred;
-
-  status = libusb_init(NULL);
-  if(status != 0){
-    perror("Error init libusb");
-    return -status;
-  }
-  //libusb_get_device_list();
-  dev = libusb_open_device_with_vid_pid(NULL, VENDOR_ID, PRODUCT_ID);
-  if(dev == NULL){
-    printf("Error! Could not find USB device \n");  
-    libusb_exit(NULL);
-    return -1;
-  }
-
-  buffer[0] = 0;
-  for(int i=0; i <5; i++){
-    buffer[0] ^= 0x1; 
-    status = libusb_bulk_transfer(dev, 0x04, buffer, 1, &transferred, 100);
-    printf("Status: %d, Bytes transferrred %d \n", status, transferred);
+	printf("Now blinking LED!\n");
+	//fprintf(dev, "1");
+	//IOCTL sends command to device with device number Major registered by the the driver
+	int val = 2;
+	ioctl(dev, TURN_LED_ON, &val);
     usleep(250000);
-  }
+	//int val2 = 0;
+	//ioctl(dev, TURN_LED_OFF, &val2);
+	//fprintf(dev, "0");
 
-  libusb_close(dev);
-  libusb_exit(NULL);
-  return 0;
+	close(dev);
+	return 0;
 }

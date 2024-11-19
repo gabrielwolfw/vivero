@@ -15,7 +15,7 @@ load:
 remove: 
 	sudo rmmod $(name)
 
-rem_usb:
+cdc:
 	sudo rmmod cdc_acm
 
 check:
@@ -25,7 +25,7 @@ log:
 	sudo dmesg | tail
 
 compile:
-	gcc test.c -o test -lusb-1.0
+	gcc test.c -o test 
 
 run:
 	sudo ./test

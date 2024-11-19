@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
     if (rank == 0) {
         printf("\n=== Fin de la ejecución ===\n\n");
     }
-    
+    // Añadir la conexión entre nodos de diferentes maquinas de azure
     MPI_Finalize();
     return 0;
 }

@@ -1,17 +1,16 @@
-#ifndef ARDUINO_DRIVER_H
-#define ARDUINO_DRIVER_H
+#ifndef GREENHOUSE_DRIVER_H
+#define GREENHOUSE_DRIVER_H
 
 #include <linux/fs.h>
 #include <linux/uaccess.h>
 #include <linux/tty.h>
 #include <linux/slab.h>
+#include <linux/module.h>
 #include <linux/ioctl.h>
 #include "greenhouse_interface.h"
 
 /* Meta information */
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Karina MG");
-MODULE_DESCRIPTION("Driver for Greenhouse USB device");
+
 
 static int serial_open(void);
 static void serial_close(void);

@@ -1,5 +1,10 @@
 #include "greenhouse_driver.h"
 
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Karina MG");
+MODULE_DESCRIPTION("Driver for Greenhouse USB device");
+
 /**
  * @brief Read data out of the buffer
  */
@@ -80,17 +85,17 @@ static ssize_t serial_write(const char *data, size_t size){
     }
 
     ret = kernel_write(serial_file, data, size, &serial_file->f_pos);
-    printk(KERN_ALERT "Greenhouse driver wrote: %d bytes\n", ret);
+    printk(KERN_ALERT "Greenhouse driver wrote: %zd bytes\n", ret);
     return ret;          
 }
 
 static ssize_t driver_ioctl(struct file *file, unsigned cmd, unsigned long arg){
 	switch(cmd){
 		case OPEN_WATER:
-			serial_write("Abrir tubo$", 11);
+			serial_write("Abrir tubo", 10);
 			break;
 		case CLOSE_WATER:
-			serial_write("Cerrar tubo$", 12);
+			serial_write("Cerrar tubo", 11);
 			break;
 	}
 	return 0;
@@ -116,7 +121,7 @@ static int __init greenhouse_driver_init(void){
     printk("Greenhouse - Device Number. Major: %d, Minor: %d was registered!\n", device_num >> 20, device_num & 0xfffff);
 
     // Create device class 
-	if((greenhouse_class = class_create(DRIVER_CLASS)) == NULL) {
+	if((greenhouse_class = class_create(THIS_MODULE,DRIVER_CLASS)) == NULL) {
 		printk("Device class can not be created!\n");
 		goto ClassError;
 	}

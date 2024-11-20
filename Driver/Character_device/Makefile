@@ -1,6 +1,6 @@
 obj-m += greenhouse_driver.o
 name = greenhouse_driver
-
+EXTRA_FLAGS += -Wno-error
 #compile module
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules

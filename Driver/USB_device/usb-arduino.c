@@ -128,9 +128,11 @@ static ssize_t arduino_write(struct file *f, const char __user *buf, size_t coun
 	printk("Arduino Message: Inside write function.\n");
 
 	buff = kmalloc(128, GFP_KERNEL);
-	if (copy_from_user(buff, buf, count))
+	int not_copied = 0;
+	not_copied = copy_from_user(buff, buf, count);
+	if (not_copied != 0)
 	{
-		printk("Error: Could not read user data!\n");
+		printk("Error: Could not read user data! Did not copy %d bytes\n", not_copied);
 		return -1;
 	}
 	
@@ -155,14 +157,13 @@ static ssize_t arduino_write(struct file *f, const char __user *buf, size_t coun
 }
 
 static ssize_t driver_ioctl(struct file *file, unsigned cmd, unsigned long arg){
-	char *com;
 	switch(cmd){
-		case TURN_LED_ON:
+		case OPEN_WATER:
 		//static ssize_t arduino_write(struct file *f, const char __user *buf, size_t count, loff_t *off)
-			arduino_write(NULL, (char *) arg, sizeof((char *) arg), NULL);
+			arduino_write(NULL, (char *) arg, 1, NULL);
 			break;
-		case TURN_LED_OFF:
-			arduino_write(NULL, (char *) arg, TRANSFER_SIZE, NULL);
+		case CLOSE_WATER:
+			arduino_write(NULL, (char *) arg, 1, NULL);
 			break;
 	}
 	return 0;
